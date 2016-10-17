@@ -5,7 +5,7 @@ allowing you to freelook with TrackIR in Forza Horizon 3.
 
 ## Requirements
 
-* [ScpServer](https://github.com/nefarius/ScpToolkit) - You only need the SCP driver. There's no need to get all the PS3/PS4 stuff.
+* ScpServer - Grab the one packaged with [XOutput](https://github.com/Stents-/XOutput).
 
 ## Setup
 
