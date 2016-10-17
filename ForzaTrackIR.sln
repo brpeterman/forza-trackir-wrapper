@@ -3,18 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForzaTrackIR", "ForzaTrackIR.csproj", "{AFFE2935-C6EF-4E78-AF40-D50B572F6347}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForzaTrackIR", "src\ForzaTrackIR.csproj", "{AFFE2935-C6EF-4E78-AF40-D50B572F6347}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Debug|x86.ActiveCfg = Debug|x86
+		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Debug|x86.Build.0 = Debug|x86
 		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Release|x86.ActiveCfg = Release|x86
+		{AFFE2935-C6EF-4E78-AF40-D50B572F6347}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
