@@ -5,7 +5,16 @@ allowing you to freelook with TrackIR in Forza Horizon 3.
 
 ## Requirements
 
-* [ScpServer](https://github.com/nefarius/ScpToolkit)
+* ScpServer - Grab the one packaged with [XOutput](https://github.com/Stents-/XOutput).
+
+## Setup
+
+1. Since there are no releases yet, download and compile the source.
+2. Run ForzaTrackIR.exe.
+3. **Important:** Make sure TrackIR is running. If it's not running, the application will crash. ;)
+4. Click Start/Stop. You should hear Windows activating a new device.
+5. Start Forza and play as usual, but with head tracking.
+6. When you're done, click Start/Stop again to disconnect the virtual gamepad.
 
 ## Limitations
 
