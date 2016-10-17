@@ -7,6 +7,14 @@ allowing you to freelook with TrackIR in Forza Horizon 3.
 
 * [ScpServer](https://github.com/nefarius/ScpToolkit)
 
+## Setup
+
+1. Since there are no releases yet, download and compile the source.
+2. Run ForzaTrackIR.exe.
+3. **Important:** Make sure TrackIR is running. If it's not running, the application will crash. ;)
+4. Click Start/Stop. You should hear Windows activating a new device.
+5. Start Forza and play as usual, but with head tracking.
+
 ## Limitations
 
 * This software is incomplete, so it doesn't work very well yet. You can't look around while inputting anything else with your controller. :(
