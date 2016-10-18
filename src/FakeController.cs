@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SlimDX.DirectInput;
+using System;
+using System.Windows.Forms;
 using TrackIRUnity;
-using SharpDX.XInput;
-using System.Threading;
 
 namespace ForzaTrackIR
 {
@@ -13,12 +9,11 @@ namespace ForzaTrackIR
     {
         #region private constants
         private const string BUS_CLASS_GUID = "{F679F562-3164-42CE-A4DB-E7DDBE723909}";
-        private const int MAX_STICK = short.MaxValue;
         #endregion
 
         #region Private fields
-        State _trackIRState;
-        State _controllerState;
+        ControllerState _trackIRState;
+        ControllerState _controllerState;
         #endregion
 
         #region Public fields
@@ -33,6 +28,26 @@ namespace ForzaTrackIR
             get;
             private set;
         }
+
+        private Joystick _device;
+        public Joystick Device
+        {
+            get
+            {
+                return _device;
+            }
+            set
+            {
+                _device = value;
+                Controller = new ControllerWrapper(_device, WindowHandle);
+                Controller.UpdateHandler += HandleControllerUpdate;
+            }
+        }
+        public Control WindowHandle
+        {
+            get; set;
+        }
+
         #endregion
 
         #region Delegates
@@ -46,10 +61,8 @@ namespace ForzaTrackIR
         public FakeController() : base(BUS_CLASS_GUID)
         {
             TrackIR = new TrackIRWrapper();
-            Controller = new ControllerWrapper();
 
             TrackIR.UpdateHandler += HandleTrackIRUpdate;
-            Controller.UpdateHandler += HandleControllerUpdate;
         }
 
         #endregion
@@ -75,22 +88,27 @@ namespace ForzaTrackIR
             double yaw = TrackIRWrapper.ToDegrees(state.fNPYaw);
             if (yaw > 60 || yaw < -60) return;
 
-            yaw += 90; // Move phase for trig calculations
+            // Move phase for trig calculations
+            // This isn't *really* necessary, but to me cos is X and sin is Y.
+            yaw += 90;
 
-            short stickX = (short) (Math.Cos(yaw * (Math.PI/180)) * MAX_STICK);
-            short stickY = (short) (Math.Sin(yaw * (Math.PI / 180)) * MAX_STICK);
+            // full left:  X = 0,            Y = ushort.max/2
+            // full right: X = ushort.max,   Y = ushort.max/2
+            // ahead:      X = ushort.max/2, Y = ushort.max
+            short stickX = (short) ((Math.Cos(yaw * (Math.PI / 180)) * short.MaxValue));
+            short stickY = (short) ((Math.Sin(yaw * (Math.PI / 180)) * ushort.MaxValue));
 
-            State newState = new State();
-            newState.Gamepad.RightThumbX = stickX;
-            newState.Gamepad.RightThumbY = stickY;
+            ControllerState newState = new ControllerState();
+            newState.Z = stickX;
+            newState.RotationZ = stickY;
 
             _trackIRState = newState;
         }
 
-        private void HandleControllerUpdate(State state)
+        private void HandleControllerUpdate(JoystickState state)
         {
             // Pass through to ScpDevice unless it's the right stick
-            _controllerState = state;
+            _controllerState = new ControllerState(state);
         }
 
         private void UpdateControllerState()
@@ -98,16 +116,27 @@ namespace ForzaTrackIR
             byte[] input = new byte[28];
             byte[] output = new byte[28];
             int transferred = 0;
-            State state = _controllerState;
-            state.Gamepad.RightThumbX = _trackIRState.Gamepad.RightThumbX;
-            state.Gamepad.RightThumbY = _trackIRState.Gamepad.RightThumbY;
+            ControllerState state = _controllerState;
+            if (_trackIRState != null)
+            {
+                state.Z = _trackIRState.Z;
+                state.RotationZ = _trackIRState.RotationZ;
+            }
             
             ParseState(state, ref output);
 
             DeviceIoControl(m_FileHandle, 0x2A400C, output, output.Length, output, output.Length, ref transferred, IntPtr.Zero);
         }
 
-        private void ParseState(State state, ref byte[] output)
+        /// <summary>
+        /// Convert joystick + trackIR state to Xbox controller state.
+        /// Conventions:
+        /// Z and RotZ: right stick, replace with TrackIR input
+        /// X and Y:    left stick
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="output"></param>
+        private void ParseState(ControllerState state, ref byte[] output)
         {
             byte serial = 1;
 
@@ -117,33 +146,40 @@ namespace ForzaTrackIR
             output[4] = serial;
             output[9] = 0x14;
 
-            GamepadButtonFlags buttons = state.Gamepad.Buttons;
+            bool[] buttons = state.GetButtons();
 
-            if ((buttons & GamepadButtonFlags.Back) > 0) output[10] |= (byte)(1 << 5); // Back
-            if ((buttons & GamepadButtonFlags.LeftThumb) > 0) output[10] |= (byte)(1 << 6); // Left  Thumb
-            if ((buttons & GamepadButtonFlags.RightThumb) > 0) output[10] |= (byte)(1 << 7); // Right Thumb
-            if ((buttons & GamepadButtonFlags.Start) > 0) output[10] |= (byte)(1 << 4); // Start
+            Buttons mappings = Controller.GetButtonMappings();
+            if (mappings == null) return;
 
-            if ((buttons & GamepadButtonFlags.DPadUp) > 0) output[10] |= (byte)(1 << 0); // Up
-            if ((buttons & GamepadButtonFlags.DPadRight) > 0) output[10] |= (byte)(1 << 3); // Right
-            if ((buttons & GamepadButtonFlags.DPadDown) > 0) output[10] |= (byte)(1 << 1); // Down
-            if ((buttons & GamepadButtonFlags.DPadLeft) > 0) output[10] |= (byte)(1 << 2); // Left
+            if (buttons[mappings.GetButton(Buttons.ButtonName.Back)]) output[10] |= (byte)(1 << 5); // Back
+            if (buttons[mappings.GetButton(Buttons.ButtonName.LS)]) output[10] |= (byte)(1 << 6); // Left  Thumb
+            if (buttons[mappings.GetButton(Buttons.ButtonName.RS)]) output[10] |= (byte)(1 << 7); // Right Thumb
+            if (buttons[mappings.GetButton(Buttons.ButtonName.Start)]) output[10] |= (byte)(1 << 4); // Start
 
-            if ((buttons & GamepadButtonFlags.LeftShoulder) > 0) output[11] |= (byte)(1 << 0); // Left  Shoulder
-            if ((buttons & GamepadButtonFlags.RightShoulder) > 0) output[11] |= (byte)(1 << 1); // Right Shoulder
+            Buttons.DPad dpad = GetDPadButtons(state);
 
-            if ((buttons & GamepadButtonFlags.Y) > 0) output[11] |= (byte)(1 << 7); // Y
-            if ((buttons & GamepadButtonFlags.B) > 0) output[11] |= (byte)(1 << 5); // B
-            if ((buttons & GamepadButtonFlags.A) > 0) output[11] |= (byte)(1 << 4); // A
-            if ((buttons & GamepadButtonFlags.X) > 0) output[11] |= (byte)(1 << 6); // X
+            if ((dpad & Buttons.DPad.Up) > 0) output[10] |= (byte)(1 << 0); // Up
+            if ((dpad & Buttons.DPad.Right) > 0) output[10] |= (byte)(1 << 3); // Right
+            if ((dpad & Buttons.DPad.Down) > 0) output[10] |= (byte)(1 << 1); // Down
+            if ((dpad & Buttons.DPad.Left) > 0) output[10] |= (byte)(1 << 2); // Left
 
-            output[12] = state.Gamepad.LeftTrigger; // Left Trigger
-            output[13] = state.Gamepad.RightTrigger; // Right Trigger
+            if (buttons[mappings.GetButton(Buttons.ButtonName.LB)]) output[11] |= (byte)(1 << 0); // Left  Shoulder
+            if (buttons[mappings.GetButton(Buttons.ButtonName.RB)]) output[11] |= (byte)(1 << 1); // Right Shoulder
 
-            int ThumbLX = state.Gamepad.LeftThumbX;
-            int ThumbLY = state.Gamepad.LeftThumbY;
-            int ThumbRX = state.Gamepad.RightThumbX;
-            int ThumbRY = state.Gamepad.RightThumbY;
+            if (buttons[mappings.GetButton(Buttons.ButtonName.Y)]) output[11] |= (byte)(1 << 7); // Y
+            if (buttons[mappings.GetButton(Buttons.ButtonName.B)]) output[11] |= (byte)(1 << 5); // B
+            if (buttons[mappings.GetButton(Buttons.ButtonName.A)]) output[11] |= (byte)(1 << 4); // A
+            if (buttons[mappings.GetButton(Buttons.ButtonName.X)]) output[11] |= (byte)(1 << 6); // X
+
+            if (buttons[mappings.GetButton(Buttons.ButtonName.Guide)]) output[11] |= (byte)(1 << 2); // Guide
+            
+            output[12] = (byte) (state.RotationX >> 8); // Left Trigger
+            output[13] = (byte) (state.RotationY >> 8); // Right Trigger
+
+            int ThumbLX = state.X - short.MinValue;
+            int ThumbLY = -state.Y + short.MaxValue;
+            int ThumbRX = state.Z;
+            int ThumbRY = state.RotationZ + short.MaxValue;
 
             output[14] = (byte)((ThumbLX >> 0) & 0xFF); // LX
             output[15] = (byte)((ThumbLX >> 8) & 0xFF);
@@ -156,6 +192,39 @@ namespace ForzaTrackIR
 
             output[20] = (byte)((ThumbRY >> 0) & 0xFF); // RY
             output[21] = (byte)((ThumbRY >> 8) & 0xFF);
+        }
+
+        private Buttons.DPad GetDPadButtons(ControllerState state)
+        {
+            Buttons.DPad pressed = Buttons.DPad.None;
+            switch(state.GetPointOfViewControllers()[0])
+            {
+                case 0:
+                    pressed = Buttons.DPad.Up;
+                    break;
+                case 4500:
+                    pressed = Buttons.DPad.Up | Buttons.DPad.Right;
+                    break;
+                case 9000:
+                    pressed = Buttons.DPad.Right;
+                    break;
+                case 13500:
+                    pressed = Buttons.DPad.Down | Buttons.DPad.Right;
+                    break;
+                case 18000:
+                    pressed = Buttons.DPad.Down;
+                    break;
+                case 22500:
+                    pressed = Buttons.DPad.Down | Buttons.DPad.Left;
+                    break;
+                case 27000:
+                    pressed = Buttons.DPad.Left;
+                    break;
+                case 31500:
+                    pressed = Buttons.DPad.Up | Buttons.DPad.Left;
+                    break;
+            }
+            return pressed;
         }
 
         private int GetNextSlot()

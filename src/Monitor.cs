@@ -1,35 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using SlimDX.DirectInput;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SharpDX.XInput;
 using TrackIRUnity;
+using System.Collections.Generic;
 
 namespace ForzaTrackIR
 {
     public partial class Monitor : Form
     {
         #region private constants
-        private const int POLL_INTERVAL = 10;
+        private const int POLL_INTERVAL = 5;
         #endregion
 
         #region private fields
-        FakeController _controller;
-        CancellationTokenSource _cancellationToken;
+        private FakeController _controller;
+        private CancellationTokenSource _cancellationToken;
+        private DirectInput _directInput;
+        private Dictionary<string, Joystick> _controllers;
         #endregion
 
         public Monitor(FakeController controller)
         {
             _controller = controller;
+            _controller.WindowHandle = this;
             _controller.TrackIR.UpdateHandler += HandleTrackIRUpdate;
-            _controller.Controller.UpdateHandler += HandleControllerUpdate;
             InitializeComponent();
+
+            _directInput = new DirectInput();
+            PopulateControllers();
         }
 
         private void Monitor_FormClosing(object sender, FormClosingEventArgs e)
@@ -55,6 +55,31 @@ namespace ForzaTrackIR
             });
         }
 
+        private void PopulateControllers()
+        {
+            _controllers = new Dictionary<string, Joystick>();
+
+            int index = 1;
+            foreach(DeviceInstance deviceInstance in _directInput.GetDevices())
+            {
+                Joystick device = new Joystick(_directInput, deviceInstance.InstanceGuid);
+                if (device.Information.ProductGuid.ToString() == "028e045e-0000-0000-0000-504944564944") //If it's an emulated controller skip it
+                    continue;
+
+                if (device.Capabilities.ButtonCount < 1 || device.Capabilities.AxesCount < 1)
+                    continue;
+
+                if (device.Information.Type != DeviceType.Gamepad && device.Information.UsageId != SlimDX.Multimedia.UsageId.Gamepad)
+                    continue;
+
+                _controllers.Add("[" + index + "] " + device.Information.ProductName, device);
+            }
+
+            cboControllers.DataSource = new BindingSource(_controllers, null);
+            cboControllers.DisplayMember = "Key";
+            cboControllers.ValueMember = "Value";
+        }
+
         private void StopPolling()
         {
             if (_cancellationToken != null)
@@ -68,8 +93,7 @@ namespace ForzaTrackIR
             try {
                 Invoke(new Action(() =>
                 {
-                    lblPitch.Text = TrackIRWrapper.ToDegrees(state.fNPPitch).ToString();
-                    lblYaw.Text = TrackIRWrapper.ToDegrees(state.fNPYaw).ToString();
+
                 }));
             }
             catch (Exception e)
@@ -78,37 +102,55 @@ namespace ForzaTrackIR
             }
         }
 
-        private void HandleControllerUpdate(State state)
+        private void HandleControllerUpdate(JoystickState state)
         {
-            try
+            int[] povs = state.GetPointOfViewControllers();
+            List<string> vals = new List<string>();
+            for (int i = 0; i < povs.Length; i++)
             {
-                Invoke(new Action(() =>
-                {
-                    GamepadButtonFlags buttons = state.Gamepad.Buttons;
-                    lblButtonA.Visible = (buttons & GamepadButtonFlags.A) != 0;
-                    lblButtonB.Visible = (buttons & GamepadButtonFlags.B) != 0;
-                    lblButtonX.Visible = (buttons & GamepadButtonFlags.X) != 0;
-                    lblButtonY.Visible = (buttons & GamepadButtonFlags.Y) != 0;
-                }));
+                vals.Add(i.ToString() + ":" + povs[i]);
             }
-            catch(Exception e)
+            Invoke(new Action(() =>
             {
-                // thread is no longer active, so just quit
-            }
+                lblTest.Text = String.Join(", ", vals);
+            }));
         }
 
         private void btnStartStop_Click(object sender, EventArgs e)
         {
             if (_controller.IsActive)
             {
-                StopPolling();
-                _controller.Stop();
+                Stop();
             }
             else
             {
-                _controller.Start();
-                BeginPolling();
+                Start();
             }
+        }
+
+        private void Stop()
+        {
+            StopPolling();
+            _controller.Stop();
+            btnStartStop.Text = "Start";
+            cboControllers.Enabled = true;
+            btnRefresh.Enabled = true;
+        }
+
+        private void Start()
+        {
+            _controller.Device = (Joystick) cboControllers.SelectedValue;
+            _controller.Start();
+            _controller.Controller.UpdateHandler += HandleControllerUpdate;
+            BeginPolling();
+            btnStartStop.Text = "Stop";
+            cboControllers.Enabled = false;
+            btnRefresh.Enabled = false;
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            PopulateControllers();
         }
     }
 }

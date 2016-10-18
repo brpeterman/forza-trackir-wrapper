@@ -28,110 +28,114 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.lblPitch = new System.Windows.Forms.Label();
-            this.lblYaw = new System.Windows.Forms.Label();
-            this.lblButtonA = new System.Windows.Forms.Label();
-            this.lblButtonB = new System.Windows.Forms.Label();
-            this.lblButtonX = new System.Windows.Forms.Label();
-            this.lblButtonY = new System.Windows.Forms.Label();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Monitor));
             this.btnStartStop = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cboControllers = new System.Windows.Forms.ComboBox();
+            this.btnRefresh = new System.Windows.Forms.Button();
+            this.lblTrackIR = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lblTest = new System.Windows.Forms.Label();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 13);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(31, 13);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "Pitch";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 37);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(28, 13);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Yaw";
-            // 
-            // lblPitch
-            // 
-            this.lblPitch.AutoSize = true;
-            this.lblPitch.Location = new System.Drawing.Point(51, 13);
-            this.lblPitch.Name = "lblPitch";
-            this.lblPitch.Size = new System.Drawing.Size(0, 13);
-            this.lblPitch.TabIndex = 2;
-            // 
-            // lblYaw
-            // 
-            this.lblYaw.AutoSize = true;
-            this.lblYaw.Location = new System.Drawing.Point(54, 37);
-            this.lblYaw.Name = "lblYaw";
-            this.lblYaw.Size = new System.Drawing.Size(0, 13);
-            this.lblYaw.TabIndex = 3;
-            // 
-            // lblButtonA
-            // 
-            this.lblButtonA.AutoSize = true;
-            this.lblButtonA.Location = new System.Drawing.Point(13, 91);
-            this.lblButtonA.Name = "lblButtonA";
-            this.lblButtonA.Size = new System.Drawing.Size(48, 13);
-            this.lblButtonA.TabIndex = 4;
-            this.lblButtonA.Text = "A Button";
-            // 
-            // lblButtonB
-            // 
-            this.lblButtonB.AutoSize = true;
-            this.lblButtonB.Location = new System.Drawing.Point(13, 114);
-            this.lblButtonB.Name = "lblButtonB";
-            this.lblButtonB.Size = new System.Drawing.Size(48, 13);
-            this.lblButtonB.TabIndex = 5;
-            this.lblButtonB.Text = "B Button";
-            // 
-            // lblButtonX
-            // 
-            this.lblButtonX.AutoSize = true;
-            this.lblButtonX.Location = new System.Drawing.Point(13, 138);
-            this.lblButtonX.Name = "lblButtonX";
-            this.lblButtonX.Size = new System.Drawing.Size(48, 13);
-            this.lblButtonX.TabIndex = 6;
-            this.lblButtonX.Text = "X Button";
-            // 
-            // lblButtonY
-            // 
-            this.lblButtonY.AutoSize = true;
-            this.lblButtonY.Location = new System.Drawing.Point(13, 161);
-            this.lblButtonY.Name = "lblButtonY";
-            this.lblButtonY.Size = new System.Drawing.Size(48, 13);
-            this.lblButtonY.TabIndex = 7;
-            this.lblButtonY.Text = "Y Button";
             // 
             // btnStartStop
             // 
-            this.btnStartStop.Location = new System.Drawing.Point(197, 226);
+            this.btnStartStop.Location = new System.Drawing.Point(286, 226);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Size = new System.Drawing.Size(75, 23);
             this.btnStartStop.TabIndex = 8;
-            this.btnStartStop.Text = "Start/Stop";
+            this.btnStartStop.Text = "Start";
             this.btnStartStop.UseVisualStyleBackColor = true;
             this.btnStartStop.Click += new System.EventHandler(this.btnStartStop_Click);
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.cboControllers);
+            this.groupBox1.Controls.Add(this.btnRefresh);
+            this.groupBox1.Controls.Add(this.lblTrackIR);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Location = new System.Drawing.Point(13, 13);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(347, 79);
+            this.groupBox1.TabIndex = 9;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Devices";
+            // 
+            // cboControllers
+            // 
+            this.cboControllers.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboControllers.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cboControllers.FormattingEnabled = true;
+            this.cboControllers.Location = new System.Drawing.Point(78, 18);
+            this.cboControllers.Name = "cboControllers";
+            this.cboControllers.Size = new System.Drawing.Size(230, 25);
+            this.cboControllers.TabIndex = 5;
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.AccessibleDescription = "Refresh controller list";
+            this.btnRefresh.AccessibleName = "Refresh";
+            this.btnRefresh.Image = ((System.Drawing.Image)(resources.GetObject("btnRefresh.Image")));
+            this.btnRefresh.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.btnRefresh.Location = new System.Drawing.Point(314, 18);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(25, 25);
+            this.btnRefresh.TabIndex = 4;
+            this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
+            // 
+            // lblTrackIR
+            // 
+            this.lblTrackIR.AutoSize = true;
+            this.lblTrackIR.Location = new System.Drawing.Point(78, 52);
+            this.lblTrackIR.Name = "lblTrackIR";
+            this.lblTrackIR.Size = new System.Drawing.Size(94, 17);
+            this.lblTrackIR.TabIndex = 3;
+            this.lblTrackIR.Text = "Not connected";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(9, 52);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(49, 17);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "TrackIR";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 21);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(66, 17);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Controller";
+            // 
+            // lblTest
+            // 
+            this.lblTest.AutoSize = true;
+            this.lblTest.Location = new System.Drawing.Point(22, 99);
+            this.lblTest.Name = "lblTest";
+            this.lblTest.Size = new System.Drawing.Size(45, 17);
+            this.lblTest.TabIndex = 10;
+            this.lblTest.Text = "Values";
+            // 
             // Monitor
             // 
-            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.AllowDrop = true;
+            this.ClientSize = new System.Drawing.Size(373, 261);
+            this.Controls.Add(this.lblTest);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnStartStop);
-            this.Controls.Add(this.lblButtonY);
-            this.Controls.Add(this.lblButtonX);
-            this.Controls.Add(this.lblButtonB);
-            this.Controls.Add(this.lblButtonA);
-            this.Controls.Add(this.lblYaw);
-            this.Controls.Add(this.lblPitch);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
+            this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Monitor";
+            this.Text = "TrackIR Wrapper";
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -148,6 +152,13 @@
         private System.Windows.Forms.Label lblButtonX;
         private System.Windows.Forms.Label lblButtonY;
         private System.Windows.Forms.Button btnStartStop;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label lblTrackIR;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnRefresh;
+        private System.Windows.Forms.ComboBox cboControllers;
+        private System.Windows.Forms.Label lblTest;
     }
 }
 
