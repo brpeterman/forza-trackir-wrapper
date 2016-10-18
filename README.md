@@ -1,6 +1,6 @@
 # forza-trackir-wrapper
 
-This is wrapper for your XInput controller that maps TrackIR input to the right stick,
+This is wrapper for your DS4 controller that maps TrackIR input to the right stick,
 allowing you to freelook with TrackIR in Forza Horizon 3.
 
 ## Requirements
@@ -11,15 +11,15 @@ allowing you to freelook with TrackIR in Forza Horizon 3.
 
 1. Since there are no releases yet, download and compile the source.
 2. Run ForzaTrackIR.exe.
-3. **Important:** Make sure TrackIR is running. If it's not running, the application will crash. ;)
-4. Click Start/Stop. You should hear Windows activating a new device.
-5. Start Forza and play as usual, but with head tracking.
-6. When you're done, click Start/Stop again to disconnect the virtual gamepad.
+3. Select your DS4 controller from the list. It should be named "Wireless Controller".
+4. **Important:** Make sure TrackIR is running. If it's not running, the application will crash. ;)
+5. Click Start/Stop. You should hear Windows activating a new device.
+6. Start Forza and play as usual, but with head tracking.
+7. When you're done, click Start/Stop again to disconnect the virtual gamepad.
 
 ## Limitations
 
-* This software is incomplete, so it doesn't work very well yet. You can't look around while inputting anything else with your controller. :(
-* Hardcoded to replace the right stick on an XInput controller (Xbox 360, Xbox One). If you're using some other controller, tough luck.
+* Hardcoded to replace the right stick on a DS4 controller. It *might* work with a DS3. It will almost certainly not work correctly with anything else.
 * Only works with TrackIR.
 
 ## Acknowledgements
