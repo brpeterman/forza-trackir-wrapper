@@ -20,7 +20,8 @@ allowing you to freelook with TrackIR in Forza Horizon 3.
 ## Limitations
 
 * Hardcoded to replace the right stick on a DS4 controller. It *might* work with a DS3. It will almost certainly not work correctly with anything else.
-* Only works with TrackIR.
+* Only works with TrackIR. Sorry, FaceTrackNoIR users.
+* Vibration does not work.
 
 ## Acknowledgements
 
