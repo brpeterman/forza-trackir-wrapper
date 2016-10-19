@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpDX.XInput;
+﻿using SlimDX.DirectInput;
+using System;
+using System.Windows.Forms;
 
 namespace ForzaTrackIR
 {
@@ -11,19 +8,29 @@ namespace ForzaTrackIR
     {
 
         #region private fields
-        private Controller _controller;
+        private Joystick _controller;
+        private Control _handle;
         #endregion
 
         #region Delegates
-        public delegate void StateChanged(State state);
+        public delegate void StateChanged(JoystickState state);
 
         public StateChanged UpdateHandler;
         #endregion
 
         #region constructors
-        public ControllerWrapper()
+        public ControllerWrapper(Joystick device, Control windowHandle)
         {
-            _controller = GetController();
+            _controller = device;
+            _handle = windowHandle;
+            AcquireController();
+        }
+        #endregion
+
+        #region Destructor
+        ~ControllerWrapper()
+        {
+            ReleaseController();
         }
         #endregion
 
@@ -31,31 +38,47 @@ namespace ForzaTrackIR
         public void Poll()
         {
 
-            State state = _controller.GetState();
+            JoystickState state = _controller.GetCurrentState();
             if (UpdateHandler != null)
             {
                 UpdateHandler(state);
             }
         }
+
+        public Buttons GetButtonMappings()
+        {
+            if (_controller.Information.ProductName == "Wireless Controller" &&
+                _controller.Information.Type == DeviceType.FirstPerson &&
+                _controller.Information.Subtype == 259)
+            {
+                return new DS4Buttons();
+            }
+
+            return null;
+        }
         #endregion
 
         #region private methods
-
-        /// <summary>
-        /// Get the first XInput controller registered in Windows.
-        /// Throws an Exception if said controller is not connected.
-        /// </summary>
-        /// <returns></returns>
-        private Controller GetController()
+        private bool AcquireController()
         {
-            Controller controller = new Controller(UserIndex.One);
-            if (!controller.IsConnected)
-            {
-                throw new Exception("No XInput controller found");
-            }
-            return controller;
+            _controller.SetCooperativeLevel(_handle, CooperativeLevel.Exclusive | CooperativeLevel.Background);
+            _controller.Acquire();
+            return true;
         }
 
+        private bool ReleaseController()
+        {
+
+            try
+            {
+                _controller.Unacquire();
+            }
+            catch (NullReferenceException)
+            {
+                // If we get a NullReferenceException, the controller has already been disposed of.
+            }
+            return true;
+        }
         #endregion
     }
 }

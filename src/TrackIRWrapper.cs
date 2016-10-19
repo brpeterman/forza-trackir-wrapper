@@ -22,14 +22,19 @@ namespace ForzaTrackIR
 
         #region State
         private TrackIRClient.LPTRACKIRDATA _trackIRState = new TrackIRClient.LPTRACKIRDATA();
+        private bool _active = false;
         #endregion
 
         #endregion
 
         #region Delegates
         public delegate void StateChanged(TrackIRClient.LPTRACKIRDATA state);
+        public delegate void ConnectedDelegate();
+        public delegate void DisconnectedDelegate();
 
         public StateChanged UpdateHandler;
+        public ConnectedDelegate Connected;
+        public DisconnectedDelegate Disconnected;
         #endregion
 
         #region static methods
@@ -104,14 +109,61 @@ namespace ForzaTrackIR
         #region Public methods
         public void Poll()
         {
-            TrackIRClient.LPTRACKIRDATA state;
-            Console.WriteLine(_trackIR.TrackIR_Enhanced_Init());
-            state = _trackIR.client_HandleTrackIRData();
-            if (TrackIRWrapper.IsChanged(_trackIRState, state))
-            {
-                if (UpdateHandler != null)
+            try {
+                TrackIRClient.LPTRACKIRDATA state;
+                state = _trackIR.client_HandleTrackIRData();
+                if (TrackIRWrapper.IsChanged(_trackIRState, state))
                 {
-                    UpdateHandler(state);
+                    if (UpdateHandler != null)
+                    {
+                        UpdateHandler(state);
+                    }
+                }
+            }
+            catch (NullReferenceException)
+            {
+                // We'll get one of these if TrackIR is not connected
+                if (_active)
+                {
+                    _active = false;
+                    if (Disconnected != null)
+                    {
+                        Disconnected();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Probe the TrackIR system to see if it's up.
+        /// If we find that the system's state doesn't match our internal state,
+        /// we'll call Connected or Disconnected.
+        /// </summary>
+        public void Probe()
+        {
+            try
+            {
+                _trackIR.TrackIR_Enhanced_Init();
+                _trackIR.client_HandleTrackIRData();
+                if (!_active)
+                {
+                    _active = true;
+                    if (Connected != null)
+                    {
+                        Connected();
+                    }
+                }
+            }
+            catch (NullReferenceException)
+            {
+                // We'll get one of these if TrackIR is not connected
+                if (_active)
+                {
+                    _active = false;
+                    if (Disconnected != null)
+                    {
+                        Disconnected();
+                    }
                 }
             }
         }
