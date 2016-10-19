@@ -1,10 +1,10 @@
 ﻿using SlimDX.DirectInput;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TrackIRUnity;
-using System.Collections.Generic;
 
 namespace ForzaTrackIR
 {
@@ -16,20 +16,49 @@ namespace ForzaTrackIR
 
         #region private fields
         private FakeController _controller;
-        private CancellationTokenSource _cancellationToken;
-        private DirectInput _directInput;
+        private CancellationTokenSource _pollToken;
+        private CancellationTokenSource _probeToken;
         private Dictionary<string, Joystick> _controllers;
         #endregion
 
         public Monitor(FakeController controller)
         {
+            this.FormClosing += this.Monitor_FormClosing;
+
             _controller = controller;
             _controller.WindowHandle = this;
             _controller.TrackIR.UpdateHandler += HandleTrackIRUpdate;
+            _controller.TrackIR.Connected += TrackIRConnected;
+            _controller.TrackIR.Disconnected += TrackIRDisconnected;
             InitializeComponent();
-
-            _directInput = new DirectInput();
+            
             PopulateControllers();
+
+            ProbeTrackIR();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!this.IsDisposed)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+                ClearJoysticks();
+
+                if (_pollToken != null)
+                {
+                    _pollToken.Dispose();
+                }
+
+                if (_probeToken != null)
+                {
+                    _probeToken.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
         }
 
         private void Monitor_FormClosing(object sender, FormClosingEventArgs e)
@@ -37,10 +66,23 @@ namespace ForzaTrackIR
             StopPolling();
         }
 
+        private void ClearJoysticks()
+        {
+            foreach (Joystick joystick in _controllers.Values)
+            {
+                joystick.Unacquire();
+                joystick.Dispose();
+            }
+        }
+
         private void BeginPolling()
         {
-            _cancellationToken = new CancellationTokenSource();
-            CancellationToken token = _cancellationToken.Token;
+            if (_pollToken != null)
+            {
+                _pollToken.Dispose();
+            }
+            _pollToken = new CancellationTokenSource();
+            CancellationToken token = _pollToken.Token;
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -55,25 +97,53 @@ namespace ForzaTrackIR
             });
         }
 
+        private void ProbeTrackIR()
+        {
+            if (_probeToken != null)
+            {
+                _probeToken.Dispose();
+            }
+            _probeToken = new CancellationTokenSource();
+            CancellationToken token = _probeToken.Token;
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    _controller.TrackIR.Probe();
+                    Thread.Sleep(1000);
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+            });
+        }
+
         private void PopulateControllers()
         {
+            if (_controllers != null)
+            {
+                ClearJoysticks();
+            }
+
             _controllers = new Dictionary<string, Joystick>();
+            DirectInput directInput = new DirectInput();
 
             int index = 1;
-            foreach(DeviceInstance deviceInstance in _directInput.GetDevices())
+            foreach(DeviceInstance deviceInstance in directInput.GetDevices())
             {
-                Joystick device = new Joystick(_directInput, deviceInstance.InstanceGuid);
-                if (device.Information.ProductGuid.ToString() == "028e045e-0000-0000-0000-504944564944") //If it's an emulated controller skip it
+                Joystick device = new Joystick(directInput, deviceInstance.InstanceGuid);
+                if ((device.Information.ProductGuid.ToString() == "028e045e-0000-0000-0000-504944564944") ||                           // Emulated controller
+                   (device.Capabilities.ButtonCount < 1 || device.Capabilities.AxesCount < 1) ||                                       // No axes or buttons
+                   (device.Information.Type != DeviceType.Gamepad && device.Information.UsageId != SlimDX.Multimedia.UsageId.Gamepad)) // Not a gamepad
+                {
+                    device.Dispose();
                     continue;
-
-                if (device.Capabilities.ButtonCount < 1 || device.Capabilities.AxesCount < 1)
-                    continue;
-
-                if (device.Information.Type != DeviceType.Gamepad && device.Information.UsageId != SlimDX.Multimedia.UsageId.Gamepad)
-                    continue;
+                }
 
                 _controllers.Add("[" + index + "] " + device.Information.ProductName, device);
             }
+            directInput.Dispose();
 
             cboControllers.DataSource = new BindingSource(_controllers, null);
             cboControllers.DisplayMember = "Key";
@@ -82,38 +152,44 @@ namespace ForzaTrackIR
 
         private void StopPolling()
         {
-            if (_cancellationToken != null)
+            if (_pollToken != null)
             {
-                _cancellationToken.Cancel();
+                _pollToken.Cancel();
             }
         }
 
         private void HandleTrackIRUpdate(TrackIRClient.LPTRACKIRDATA state)
         {
             try {
-                Invoke(new Action(() =>
-                {
-
-                }));
+                
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // thread is no longer active, so just quit
             }
         }
 
-        private void HandleControllerUpdate(JoystickState state)
+        private void TrackIRConnected()
         {
-            int[] povs = state.GetPointOfViewControllers();
-            List<string> vals = new List<string>();
-            for (int i = 0; i < povs.Length; i++)
-            {
-                vals.Add(i.ToString() + ":" + povs[i]);
-            }
             Invoke(new Action(() =>
             {
-                lblTest.Text = String.Join(", ", vals);
+                lblTrackIR.Text = "Connected";
+                btnStartStop.Enabled = true;
             }));
+        }
+        
+        private void TrackIRDisconnected()
+        {
+            Invoke(new Action(() =>
+            {
+                lblTrackIR.Text = "Disconnected";
+                btnStartStop.Enabled = false;
+            }));
+        }
+
+        private void HandleControllerUpdate(JoystickState state)
+        {
+            
         }
 
         private void btnStartStop_Click(object sender, EventArgs e)
@@ -135,10 +211,12 @@ namespace ForzaTrackIR
             btnStartStop.Text = "Start";
             cboControllers.Enabled = true;
             btnRefresh.Enabled = true;
+            ProbeTrackIR();
         }
 
         private void Start()
         {
+            _probeToken.Cancel();
             _controller.Device = (Joystick) cboControllers.SelectedValue;
             _controller.Start();
             _controller.Controller.UpdateHandler += HandleControllerUpdate;

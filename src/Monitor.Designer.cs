@@ -7,19 +7,6 @@
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -36,16 +23,16 @@
             this.lblTrackIR = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.lblTest = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnStartStop
             // 
-            this.btnStartStop.Location = new System.Drawing.Point(286, 226);
+            this.btnStartStop.Enabled = false;
+            this.btnStartStop.Location = new System.Drawing.Point(277, 98);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Size = new System.Drawing.Size(75, 23);
-            this.btnStartStop.TabIndex = 8;
+            this.btnStartStop.TabIndex = 3;
             this.btnStartStop.Text = "Start";
             this.btnStartStop.UseVisualStyleBackColor = true;
             this.btnStartStop.Click += new System.EventHandler(this.btnStartStop_Click);
@@ -72,7 +59,7 @@
             this.cboControllers.Location = new System.Drawing.Point(78, 18);
             this.cboControllers.Name = "cboControllers";
             this.cboControllers.Size = new System.Drawing.Size(230, 25);
-            this.cboControllers.TabIndex = 5;
+            this.cboControllers.TabIndex = 1;
             // 
             // btnRefresh
             // 
@@ -83,7 +70,7 @@
             this.btnRefresh.Location = new System.Drawing.Point(314, 18);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(25, 25);
-            this.btnRefresh.TabIndex = 4;
+            this.btnRefresh.TabIndex = 2;
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
@@ -114,20 +101,10 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Controller";
             // 
-            // lblTest
-            // 
-            this.lblTest.AutoSize = true;
-            this.lblTest.Location = new System.Drawing.Point(22, 99);
-            this.lblTest.Name = "lblTest";
-            this.lblTest.Size = new System.Drawing.Size(45, 17);
-            this.lblTest.TabIndex = 10;
-            this.lblTest.Text = "Values";
-            // 
             // Monitor
             // 
             this.AllowDrop = true;
-            this.ClientSize = new System.Drawing.Size(373, 261);
-            this.Controls.Add(this.lblTest);
+            this.ClientSize = new System.Drawing.Size(373, 130);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnStartStop);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -137,20 +114,11 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
         
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label lblPitch;
-        private System.Windows.Forms.Label lblYaw;
-        private System.Windows.Forms.Label lblButtonA;
-        private System.Windows.Forms.Label lblButtonB;
-        private System.Windows.Forms.Label lblButtonX;
-        private System.Windows.Forms.Label lblButtonY;
         private System.Windows.Forms.Button btnStartStop;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label lblTrackIR;
@@ -158,7 +126,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.ComboBox cboControllers;
-        private System.Windows.Forms.Label lblTest;
     }
 }
 

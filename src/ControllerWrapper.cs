@@ -68,7 +68,15 @@ namespace ForzaTrackIR
 
         private bool ReleaseController()
         {
-            _controller.Unacquire();
+
+            try
+            {
+                _controller.Unacquire();
+            }
+            catch (NullReferenceException)
+            {
+                // If we get a NullReferenceException, the controller has already been disposed of.
+            }
             return true;
         }
         #endregion
